@@ -30,6 +30,19 @@ const makeDomo = async (req, res) => {
   }
 };
 
+const deleteDomo = async (req, res) => {
+  try {
+    await Domo.deleteOne({
+      name: req.body.name,
+      owner: req.session.account._id,
+    });
+    return res.status(204).json({ message: 'Domo deleted!' });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json({ error: 'An error occured!' });
+  }
+};
+
 const getDomos = (req, res) => DomoModel.findByOwner(req.session.account._id, (err, docs) => {
   if (err) {
     console.log(err);
@@ -42,5 +55,6 @@ const getDomos = (req, res) => DomoModel.findByOwner(req.session.account._id, (e
 module.exports = {
   makerPage,
   makeDomo,
+  deleteDomo,
   getDomos,
 };

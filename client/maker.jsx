@@ -14,7 +14,18 @@ const handleDomo = (e) => {
         return false;
     }
 
-    helper.sendPost(e.target.action, {name, age, power, _csrf}, loadDomosFromServer);
+    helper.sendPost(e.target.action, { name, age, power, _csrf }, loadDomosFromServer);
+    return false;
+}
+
+const handleDeleteDomo = (e) => {
+    e.preventDefault();
+    helper.hideError();
+
+    const name = e.target.parentNode.querySelector('.domoName').innerHTML.substring(6);
+    const _csrf = e.target.parentNode.querySelector('.csrf').innerHTML;
+
+    helper.sendPost('/maker', { name, _csrf }, loadDomosFromServer, 'DELETE');
     return false;
 }
 
@@ -52,9 +63,13 @@ const DomoList = (props) => {
         return (
             <div key={domo._id} className="domo">
                 <img src="assets/img/domoface.jpeg" alt="domo face" className="domoFace" />
-                <h3 className="domoName"> Name: {domo.name} </h3>
-                <h3 className="domoAge"> Age: {domo.age} </h3>
-                <h3 className="domoPower"> Power Level: {domo.power} </h3>
+                <h3 className="domoName">Name: {domo.name}</h3>
+                <h3 className="domoAge">Age: {domo.age}</h3>
+                <h3 className="domoPower">Power Level: {domo.power}</h3>
+                <h3 className="csrf">{props.csrf}</h3>
+                <button className="makeDomoSubmit" onClick={handleDeleteDomo}>
+                    Delete Domo
+                </button>
             </div>
         );
 
@@ -70,8 +85,13 @@ const DomoList = (props) => {
 const loadDomosFromServer = async () => {
     const response = await fetch('/getDomos');
     const data = await response.json();
+
+
+    const responseToken = await fetch('/getToken');
+    const dataToken = await responseToken.json();
+
     ReactDOM.render(
-        <DomoList domos = {data.domos} />,
+        <DomoList domos={data.domos} csrf={dataToken.csrfToken} />,
         document.getElementById('domos')
     );
 }
@@ -81,12 +101,12 @@ const init = async () => {
     const data = await response.json();
 
     ReactDOM.render(
-        <DomoForm csrf = {data.csrfToken} />,
+        <DomoForm csrf={data.csrfToken} />,
         document.getElementById('makeDomo')
     );
 
     ReactDOM.render(
-        <DomoList domos = {[]} />,
+        <DomoList domos={[]} csrf={data.csrfToken} />,
         document.getElementById('domos')
     );
 
